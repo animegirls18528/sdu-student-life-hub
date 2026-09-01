@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { revalidatePath } from "next/cache";
 import { createAuditLog } from "@/lib/audit";
+import { hasPermission } from "@/lib/rbac";
 
 export async function getActivities() {
   try {
