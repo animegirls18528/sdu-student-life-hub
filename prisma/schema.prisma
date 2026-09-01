@@ -1,0 +1,248 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      String   @default("STUDENT") // SQLite does not support enums, using String
+  name      String
+  studentId String?  @unique // Optional, for students only
+  imageUrl  String?  // [NEW] Added for profile picture
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  resetToken        String?  @unique
+  resetTokenExpires DateTime?
+  failedLoginAttempts Int      @default(0)
+  isLocked          Boolean  @default(false)
+  lockedUntil       DateTime?
+  tokenVersion      Int      @default(0)
+  tasks                 Task[]
+  teachingSchedules     TeachingSchedule[] @relation("TeacherSchedules")
+  roomBookings          RoomBooking[]
+  equipmentBookings     EquipmentBooking[]
+  enrollments           Enrollment[]
+  attendances           Attendance[]
+  activityRegistrations ActivityRegistration[]
+  posts                 Post[]
+  comments              Comment[]
+  likes                 Like[]
+}
+
+model LoginLog {
+  id        String   @id @default(uuid())
+  username  String
+  success   Boolean
+  createdAt DateTime @default(now())
+}
+
+model Task {
+  id          String   @id @default(uuid())
+  label       String
+  description String?
+  priority    String   @default("ปกติ")
+  category    String   @default("ทั่วไป")
+  completed   Boolean  @default(false)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Room {
+  id          String   @id @default(uuid())
+  name        String
+  capacity    Int
+  type        String   @default("MEETING") // e.g. MEETING, STUDY
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bookings    RoomBooking[]
+}
+
+model RoomBooking {
+  id          String   @id @default(uuid())
+  roomId      String
+  room        Room     @relation(fields: [roomId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  date        String   // Storing as YYYY-MM-DD string for easier querying
+  startTime   String   // e.g. "09:00"
+  endTime     String   // e.g. "11:00"
+  purpose     String
+  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Equipment {
+  id          String   @id @default(uuid())
+  name        String
+  type        String   // e.g. LAPTOP, PROJECTOR, CABLE
+  description String?
+  imageUrl    String?
+  status      String   @default("AVAILABLE") // AVAILABLE, UNAVAILABLE, MAINTENANCE
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bookings    EquipmentBooking[]
+}
+
+model EquipmentBooking {
+  id          String   @id @default(uuid())
+  equipmentId String
+  equipment   Equipment @relation(fields: [equipmentId], references: [id])
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  date        String    // Storing as YYYY-MM-DD string
+  startTime   String    // e.g. "09:00"
+  endTime     String    // e.g. "11:00"
+  purpose     String
+  status      String    @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED, RETURNED
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Course {
+  id          String       @id @default(uuid())
+  code        String       @unique // e.g. "IT101"
+  name        String
+  instructor  String
+  schedule    String       // e.g. "Mon 09:00-12:00"
+  room        String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  enrollments Enrollment[]
+  attendances Attendance[]
+}
+
+model Enrollment {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId])
+}
+
+model Attendance {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id])
+  date      String   // YYYY-MM-DD
+  status    String   // PRESENT, LATE, ABSENT, EXCUSED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, courseId, date])
+}
+
+model Activity {
+  id            String   @id @default(uuid())
+  title         String
+  description   String?
+  category      String   // e.g. VOLUNTEER, SPORT, ACADEMIC, CULTURAL
+  date          String   // YYYY-MM-DD
+  startTime     String   // e.g. "09:00"
+  endTime       String   // e.g. "16:00"
+  location      String
+  maxParticipants Int
+  imageUrl      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  registrations ActivityRegistration[]
+}
+
+model ActivityRegistration {
+  id          String   @id @default(uuid())
+  activityId  String
+  activity    Activity @relation(fields: [activityId], references: [id])
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  status      String   @default("REGISTERED") // REGISTERED, CANCELLED, ATTENDED
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, activityId])
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  type      String   @default("ทั่วไป") // e.g. ทั่วไป, ด่วน
+  author    String   @default("Admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id        String   @id @default(uuid())
+  content   String
+  imageUrl  String?
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  comments  Comment[]
+  likes     Like[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId]) // A user can only like a post once
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String   // BOOK_ROOM, CANCEL_ROOM, BOOK_EQUIPMENT, CANCEL_EQUIPMENT, CHECK_IN, MARK_ATTENDANCE, REGISTER_ACTIVITY, etc.
+  target    String   // ID of the entity being acted upon
+  details   String?  // Additional details (JSON string)
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+}
+
+model TeachingSchedule {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation("TeacherSchedules", fields: [userId], references: [id])
+  courseName  String
+  courseCode  String?
+  dayOfWeek   String
+  startTime   String
+  endTime     String
+  room        String
+  type        String   @default("บรรยาย")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
