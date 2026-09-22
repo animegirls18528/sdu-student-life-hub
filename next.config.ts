@@ -19,7 +19,9 @@ const nextConfig: NextConfig = {
   webpack: (config) => {
     return config;
   },
-  turbopack: {},
+  turbopack: {
+    root: __dirname,
+  },
   images: {
     remotePatterns: [
       {

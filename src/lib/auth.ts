@@ -42,9 +42,27 @@ export function generateCsrfToken(): string {
   return crypto.randomBytes(32).toString('hex');
 }
 
-export async function getSession() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('session')?.value;
+export async function getSession(req?: NextRequest) {
+  let token: string | undefined;
+
+  if (req) {
+    const authHeader = req.headers.get('authorization');
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    } else {
+      token = req.cookies.get('session')?.value;
+    }
+  }
+
+  if (!token) {
+    try {
+      const cookieStore = await cookies();
+      token = cookieStore.get('session')?.value;
+    } catch {
+      // Outside of Server Component / Server Action context
+    }
+  }
+
   if (!token) return null;
 
   try {
