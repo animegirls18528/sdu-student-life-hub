@@ -9,6 +9,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { BackgroundProvider } from "@/components/background-provider";
 import { BackgroundCustomizer } from "@/components/background-customizer";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Dashboard - SDU Student Life Hub",
   description: "แอปเดียวจบสำหรับชีวิตนักศึกษา",

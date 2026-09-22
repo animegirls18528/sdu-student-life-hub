@@ -7,7 +7,7 @@ import { createAuditLog } from "@/lib/audit";
 
 export async function getRooms() {
   const session = await getSession();
-  if (!session) throw new Error("Unauthorized");
+  if (!session) return { success: false, error: "Unauthorized" };
 
   try {
     const rooms = await prisma.room.findMany({
@@ -22,7 +22,7 @@ export async function getRooms() {
 
 export async function getRoomById(id: string) {
   const session = await getSession();
-  if (!session) throw new Error("Unauthorized");
+  if (!session) return { success: false, error: "Unauthorized" };
 
   try {
     const room = await prisma.room.findUnique({
@@ -38,7 +38,7 @@ export async function getRoomById(id: string) {
 
 export async function bookRoom(roomId: string, date: string, startTime: string, endTime: string, purpose: string) {
   const session = await getSession();
-  if (!session) throw new Error("Unauthorized");
+  if (!session) return { success: false, error: "Unauthorized" };
 
   try {
     // Check for conflicts
@@ -98,7 +98,7 @@ export async function bookRoom(roomId: string, date: string, startTime: string, 
 
 export async function getMyBookings() {
   const session = await getSession();
-  if (!session) throw new Error("Unauthorized");
+  if (!session) return { success: false, error: "Unauthorized" };
 
   try {
     const bookings = await prisma.roomBooking.findMany({
@@ -118,7 +118,7 @@ export async function getMyBookings() {
 
 export async function cancelBooking(id: string) {
   const session = await getSession();
-  if (!session) throw new Error("Unauthorized");
+  if (!session) return { success: false, error: "Unauthorized" };
 
   try {
     const booking = await prisma.roomBooking.findUnique({ where: { id } });
