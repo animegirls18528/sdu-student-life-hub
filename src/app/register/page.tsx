@@ -114,7 +114,7 @@ export default function RegisterPage() {
               required
               suppressHydrationWarning
               className="block w-full pl-11 pr-4 py-3 border border-zinc-200 dark:border-zinc-700 placeholder-zinc-400 dark:placeholder-zinc-500 text-zinc-900 dark:text-zinc-100 bg-white dark:bg-zinc-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all sm:text-sm"
-              placeholder="อีเมล"
+              placeholder="อีเมลมหาวิทยาลัย (@mail.dusit.ac.th หรือ @sdu.ac.th)"
             />
           </div>
 
