@@ -6,7 +6,10 @@ import { z } from "zod";
 
 const registerSchema = z.object({
   name: z.string().min(2, "ชื่อ-นามสกุลต้องมีความยาวอย่างน้อย 2 ตัวอักษร"),
-  email: z.string().email("รูปแบบอีเมลไม่ถูกต้อง"),
+  email: z.string().email("รูปแบบอีเมลไม่ถูกต้อง").refine(
+    (email) => email.toLowerCase().endsWith("@sdu.ac.th") || email.toLowerCase().endsWith("@mail.sdu.ac.th"),
+    { message: "ต้องใช้อีเมลของมหาวิทยาลัย (@sdu.ac.th หรือ @mail.sdu.ac.th) เท่านั้น" }
+  ),
   password: z.string().min(8, "รหัสผ่านต้องมีความยาวอย่างน้อย 8 ตัวอักษร"),
   confirmPassword: z.string().min(8, "รหัสผ่านยืนยันต้องมีความยาวอย่างน้อย 8 ตัวอักษร"),
   studentId: z.string().optional(),
